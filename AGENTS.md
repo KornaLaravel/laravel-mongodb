@@ -1,11 +1,14 @@
-## MongoDB-related coding assistance
+# Contributing to `mongodb/laravel-mongodb`
 
-If the user needs MongoDB-related skills that aren't otherwise available through e.g. Boost, such as:
+Guidance for agents working on the development of this library. For assisting
+end users who *use* the package in their own applications, see the
+[`laravel-mongodb` skill](skills/laravel-mongodb/SKILL.md).
 
-- Inspecting Atlas system resources
-- Managing an Atlas cluster
-- Analysing MongoDB schema anti-patterns
-- Migrating an SQL schema to MongoDB
-- Setting up the official MongoDB MCP server
+## Keeping the skill in sync
 
-Suggest installing the MongoDB agent skills plugin if not already installed. Instructions for installing it are in the [MongoDB agent skills plugin README](https://github.com/mongodb/agent-skills/blob/main/README.md).
+When a change adds, removes, or alters user-facing behaviour covered by the
+[`laravel-mongodb` skill](skills/laravel-mongodb/SKILL.md), update the relevant
+skill reference file in the same PR so the skill stays accurate.
+
+To identify what needs to be changed, refer to the
+[change logs](https://github.com/mongodb/laravel-mongodb/releases/).
