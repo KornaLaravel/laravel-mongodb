@@ -28,6 +28,7 @@ use MongoDB\Driver\Cursor;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
 use Override;
+use ReflectionMethod;
 use RuntimeException;
 use SortDirection;
 use TypeError;
@@ -1696,21 +1697,29 @@ class Builder extends BaseBuilder
     public function vectorSearch(
         string $index,
         string $path,
-        array $queryVector,
-        int $limit,
+        array|null $queryVector = null,
+        int $limit = 10,
         bool $exact = false,
         QueryInterface|array|null $filter = null,
         int|null $numCandidates = null,
+        string|null $query = null,
+        string|null $model = null,
     ): Collection {
+        if (($query !== null || $model !== null) && ! self::vectorSearchSupportsAutoEmbedding()) {
+            throw new BadMethodCallException('The "query" and "model" parameters of vectorSearch() require mongodb/mongodb 2.4+.');
+        }
+
         // Forward named arguments to the vectorSearch stage, skip null values
         $args = array_filter([
             'index' => $index,
             'limit' => $limit,
             'path' => $path,
-            'queryVector' => $queryVector,
+            'model' => $model,
             'exact' => $exact,
             'filter' => $filter,
             'numCandidates' => $numCandidates,
+            'queryVector' => $queryVector,
+            'query' => $query,
         ], fn ($arg) => $arg !== null);
 
         return $this->aggregate()
@@ -1740,6 +1749,28 @@ class Builder extends BaseBuilder
         return $this->aggregate()->search(
             Search::autocomplete(...$args),
         )->get()->pluck($path);
+    }
+
+    /**
+     * Check whether the installed mongodb/mongodb library supports the
+     * "query" and "model" auto-embedding parameters of vectorSearch(),
+     * added in mongodb/mongodb 2.4.
+     */
+    private static function vectorSearchSupportsAutoEmbedding(): bool
+    {
+        static $supported;
+
+        if ($supported === null) {
+            $supported = false;
+            foreach ((new ReflectionMethod(FluentFactoryTrait::class, 'vectorSearch'))->getParameters() as $param) {
+                if ($param->getName() === 'query') {
+                    $supported = true;
+                    break;
+                }
+            }
+        }
+
+        return $supported;
     }
 
     /**
